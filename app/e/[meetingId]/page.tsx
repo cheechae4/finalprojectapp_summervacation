@@ -9,6 +9,7 @@ import TimeCandidateCard from "@/components/TimeCandidateCard";
 import { formatDuration } from "@/lib/format";
 import { supabase } from "@/lib/supabase";
 import { track } from "@/lib/analytics";
+import { resolvePoint } from "@/lib/kakao";
 import { createParticipantToken } from "@/lib/tokens";
 import { PURPOSE_LABEL, type Participant, type VoteStatus } from "@/lib/types";
 import { useParticipantToken } from "@/lib/useClientValue";
@@ -65,6 +66,18 @@ export default function VotePage() {
 
   const drafts = draftEdits ?? savedDrafts;
 
+  /**
+   * 좌표를 안 남겼어도 적어준 장소 이름으로 좌표를 찾아본다.
+   * "지금 있는 곳" 버튼을 안 눌러도 지도에 뜨게 하려는 것.
+   */
+  async function withCoords(input: Departure) {
+    const text = input.text.trim();
+    if (input.lat !== null || !text) return input;
+
+    const point = await resolvePoint(text);
+    return point ? { text, lat: point.lat, lng: point.lng } : input;
+  }
+
   function patchDraft(candidateId: string, patch: Partial<Draft>) {
     setDraftEdits((prev) => {
       const base = prev ?? savedDrafts;
@@ -93,15 +106,16 @@ export default function VotePage() {
     setFormError(null);
 
     const token = createParticipantToken(data.meeting.id);
+    const where = await withCoords(departure);
     const { data: inserted, error: insertError } = await supabase
       .from("participants")
       .insert({
         meeting_id: data.meeting.id,
         participant_token: token,
         name: name.trim(),
-        departure_location: departure.text.trim() || null,
-        departure_lat: departure.lat,
-        departure_lng: departure.lng,
+        departure_location: where.text.trim() || null,
+        departure_lat: where.lat,
+        departure_lng: where.lng,
       })
       .select("*")
       .single();
@@ -111,7 +125,7 @@ export default function VotePage() {
       setFormError("참여하지 못했어요. 잠시 뒤 다시 시도해주세요.");
       return;
     }
-    track("participant_join", { has_location: departure.lat !== null });
+    track("participant_join", { has_location: where.lat !== null });
     setJoined(inserted as Participant);
     void reload();
   }
@@ -136,6 +150,7 @@ export default function VotePage() {
     setBusy(true);
     setFormError(null);
 
+    const where = await withCoords(departure);
     const [{ error: voteError }] = await Promise.all([
       supabase.from("votes").upsert(rows, {
         onConflict: "participant_id,candidate_id",
@@ -144,9 +159,9 @@ export default function VotePage() {
         .from("participants")
         .update({
           name: name.trim() || me.name,
-          departure_location: departure.text.trim() || null,
-          departure_lat: departure.lat,
-          departure_lng: departure.lng,
+          departure_location: where.text.trim() || null,
+          departure_lat: where.lat,
+          departure_lng: where.lng,
         })
         .eq("id", me.id),
     ]);

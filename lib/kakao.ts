@@ -123,7 +123,7 @@ export function loadKakao(): Promise<KakaoNamespace | null> {
   return loader;
 }
 
-/** 장소 이름으로 좌표를 찾는다. 키가 없거나 못 찾으면 null. */
+/** 장소 이름으로 좌표를 찾는다. 키가 없거나 못 찾으면 빈 배열. */
 export async function searchPlace(keyword: string): Promise<KakaoPlace[]> {
   const kakao = await loadKakao();
   if (!kakao) return [];
@@ -134,4 +134,25 @@ export async function searchPlace(keyword: string): Promise<KakaoPlace[]> {
       resolve(status === kakao.maps.services.Status.OK ? data : []);
     });
   });
+}
+
+/** 적어준 장소 이름을 좌표 하나로 바꾼다. 못 찾으면 null. */
+export async function resolvePoint(
+  keyword: string,
+): Promise<{ lat: number; lng: number } | null> {
+  const text = keyword.trim();
+  if (!text) return null;
+
+  const found = await searchPlace(text);
+  if (found.length === 0) return null;
+
+  return { lat: Number(found[0].y), lng: Number(found[0].x) };
+}
+
+export type KakaoStatus = "ok" | "no-key" | "blocked";
+
+/** 지도를 못 쓰는 이유를 구분한다. 화면에서 원인을 알려주려고 쓴다. */
+export async function kakaoStatus(): Promise<KakaoStatus> {
+  if (!kakaoKey()) return "no-key";
+  return (await loadKakao()) ? "ok" : "blocked";
 }

@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Icon from "@/components/Icon";
 import Loading from "@/components/Loading";
 import MeetingMap, { type MapPin } from "@/components/MeetingMap";
@@ -14,7 +14,14 @@ import {
   formatMinutes,
   type Point,
 } from "@/lib/geo";
-import { kakaoKey, searchPlace, type KakaoPlace } from "@/lib/kakao";
+import {
+  kakaoKey,
+  kakaoStatus,
+  resolvePoint,
+  searchPlace,
+  type KakaoPlace,
+  type KakaoStatus,
+} from "@/lib/kakao";
 import { track } from "@/lib/analytics";
 import { supabase } from "@/lib/supabase";
 import { PURPOSE_LABEL, type Purpose } from "@/lib/types";
@@ -38,6 +45,8 @@ export default function LocationPage() {
   const [searching, setSearching] = useState(false);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [mapStatus, setMapStatus] = useState<KakaoStatus | null>(null);
+  const [lookedUp, setLookedUp] = useState(false);
 
   const creatorToken = useCreatorToken();
   const myToken = useParticipantToken(meetingId);
@@ -93,6 +102,61 @@ export default function LocationPage() {
       count,
     }));
   }, [data]);
+
+  // 지도를 못 쓰면 왜 못 쓰는지 화면에서 알려주려고 미리 확인한다.
+  useEffect(() => {
+    let active = true;
+    void kakaoStatus().then((s) => {
+      if (active) setMapStatus(s);
+    });
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  /** 글자로만 적혀 있어서 아직 지도에 못 올린 사람들. */
+  const pending = useMemo(() => {
+    if (!data) return [];
+    return data.participants.filter(
+      (p) => p.departure_lat === null && p.departure_location?.trim(),
+    );
+  }, [data]);
+
+  const filling = mapStatus === "ok" && !lookedUp && pending.length > 0;
+
+  /**
+   * 글자로만 적어둔 출발지를 좌표로 바꿔서 저장한다.
+   * "지금 있는 곳"을 안 눌러도 지도에 뜨게 하려는 것.
+   */
+  useEffect(() => {
+    if (mapStatus !== "ok" || lookedUp || pending.length === 0) return;
+
+    let active = true;
+
+    async function fill() {
+      let changed = false;
+      for (const p of pending) {
+        const point = await resolvePoint(p.departure_location as string);
+        if (!point) continue;
+        await supabase
+          .from("participants")
+          .update({ departure_lat: point.lat, departure_lng: point.lng })
+          .eq("id", p.id);
+        changed = true;
+      }
+      return changed;
+    }
+
+    void fill().then((changed) => {
+      if (!active) return;
+      setLookedUp(true);
+      if (changed) void reload();
+    });
+
+    return () => {
+      active = false;
+    };
+  }, [pending, mapStatus, lookedUp, reload]);
 
   async function search() {
     const keyword = place.trim();
@@ -150,10 +214,31 @@ export default function LocationPage() {
 
       <section className="mt-5">
         <MeetingMap pins={pins} center={target} centerLabel={targetLabel} />
-        {!kakaoKey() && pins.length > 0 && (
-          <p className="mt-2 text-[12.5px] leading-relaxed text-ink-soft">
-            지도 키가 없어서 서로의 위치 관계만 그려 보여드려요. 카카오맵 키를
-            넣으면 실제 지도로 바뀝니다.
+
+        {filling && (
+          <p className="dots mt-2 flex items-center text-[13px] text-ink-soft">
+            적어주신 장소를 지도에서 찾는 중<span /><span /><span />
+          </p>
+        )}
+
+        {mapStatus === "no-key" && (
+          <p className="mt-2 rounded-[12px] bg-yellow-soft px-3 py-2.5 text-[12.5px] leading-relaxed text-yellow-ink">
+            지도 키가 없어서 위치 관계만 그려 보여드려요. 적어주신 장소를
+            좌표로 바꾸는 것도 지도 키가 있어야 돼요.
+          </p>
+        )}
+
+        {mapStatus === "blocked" && (
+          <p className="mt-2 rounded-[12px] bg-coral-soft px-3 py-2.5 text-[12.5px] leading-relaxed text-coral">
+            지도를 못 불러왔어요. 카카오 개발자센터에 이 주소가 등록돼 있는지
+            확인해주세요.
+          </p>
+        )}
+
+        {mapStatus === "ok" && !filling && pins.length === 0 && (
+          <p className="mt-2 rounded-[12px] bg-cream px-3 py-2.5 text-[12.5px] leading-relaxed text-ink-soft">
+            아직 아무도 출발지를 안 적었어요. 투표 화면에서 출발지를 적으면
+            여기 지도에 모여요.
           </p>
         )}
       </section>
