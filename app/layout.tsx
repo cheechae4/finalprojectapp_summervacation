@@ -1,6 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import Link from "next/link";
-import Analytics from "@/components/Analytics";
+import Analytics, { GtmNoScript } from "@/components/Analytics";
 import SetupNotice from "@/components/SetupNotice";
 import "./globals.css";
 
@@ -35,6 +35,7 @@ export default function RootLayout({
         />
       </head>
       <body>
+        <GtmNoScript />
         <div className="mx-auto flex min-h-dvh w-full max-w-[560px] flex-col px-5">
           <header className="py-5">
             <Link
