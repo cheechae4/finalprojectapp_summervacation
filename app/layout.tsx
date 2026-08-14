@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import Link from "next/link";
+import SetupNotice from "@/components/SetupNotice";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -42,7 +43,10 @@ export default function RootLayout({
               모임픽
             </Link>
           </header>
-          <main className="flex-1 pb-16">{children}</main>
+          <main className="flex-1 pb-16">
+            <SetupNotice />
+            {children}
+          </main>
           <footer className="border-t border-sand py-6 text-[13px] text-ink-soft">
             로그인 없이 링크만으로 쓰는 모임 조율 서비스
           </footer>

@@ -60,9 +60,23 @@ npm run dev
 
 ## Vercel 배포
 
-1. GitHub 저장소를 Vercel에 import 합니다.
-2. Environment Variables에 위 세 개를 넣습니다. `NEXT_PUBLIC_`으로 시작하는 두 개는 브라우저에도 노출되는 값이고, `ANTHROPIC_API_KEY`는 서버에서만 씁니다.
-3. Deploy 하면 끝입니다. 별도 빌드 설정은 필요 없습니다.
+1. GitHub 저장소를 Vercel에 import 합니다. 빌드 설정은 건드릴 게 없습니다.
+2. **Settings → Environment Variables**에 값을 넣습니다.
+
+| 키 | 필수 | 어디서 |
+|---|---|---|
+| `NEXT_PUBLIC_SUPABASE_URL` | 예 | Supabase Settings → API |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | 예 | Supabase Settings → API |
+| `NEXT_PUBLIC_KAKAO_MAP_KEY` | 아니오 | 카카오 개발자센터 JavaScript 키 |
+| `ANTHROPIC_API_KEY` | 아니오 | console.anthropic.com |
+
+3. Deploy 합니다.
+
+**`NEXT_PUBLIC_`으로 시작하는 값은 빌드할 때 코드에 박힙니다.** 배포한 뒤에 값을 추가하거나 고쳤다면 Deployments에서 **Redeploy**를 눌러야 반영됩니다. `ANTHROPIC_API_KEY`는 서버에서만 읽으므로 재배포 없이도 다음 요청부터 적용됩니다.
+
+Supabase 값이 없는 상태로 배포하면 화면 위에 어떤 값이 빠졌는지 알려주는 안내가 뜹니다.
+
+카카오맵 키를 넣었다면 카카오 개발자센터의 **플랫폼 → Web**에 배포 주소(`https://<프로젝트>.vercel.app`)를 꼭 등록하세요. 등록하지 않으면 키가 있어도 지도가 뜨지 않습니다.
 
 ## 추천 로직
 
