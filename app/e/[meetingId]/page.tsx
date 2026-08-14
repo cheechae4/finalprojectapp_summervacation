@@ -8,6 +8,7 @@ import Loading from "@/components/Loading";
 import TimeCandidateCard from "@/components/TimeCandidateCard";
 import { formatDuration } from "@/lib/format";
 import { supabase } from "@/lib/supabase";
+import { track } from "@/lib/analytics";
 import { createParticipantToken } from "@/lib/tokens";
 import { PURPOSE_LABEL, type Participant, type VoteStatus } from "@/lib/types";
 import { useParticipantToken } from "@/lib/useClientValue";
@@ -110,6 +111,7 @@ export default function VotePage() {
       setFormError("참여하지 못했어요. 잠시 뒤 다시 시도해주세요.");
       return;
     }
+    track("participant_join", { has_location: departure.lat !== null });
     setJoined(inserted as Participant);
     void reload();
   }
@@ -155,6 +157,7 @@ export default function VotePage() {
       return;
     }
 
+    track("vote_save", { votes: rows.length });
     setSaved(true);
     router.push(`/e/${data.meeting.id}/result`);
   }

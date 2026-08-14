@@ -5,6 +5,7 @@ import { useState } from "react";
 import PurposeSelector from "@/components/PurposeSelector";
 import { toLocalInputValue } from "@/lib/format";
 import { supabase } from "@/lib/supabase";
+import { track } from "@/lib/analytics";
 import { getCreatorToken } from "@/lib/tokens";
 import type { Purpose } from "@/lib/types";
 
@@ -113,6 +114,7 @@ export default function CreatePage() {
       return;
     }
 
+    track("meeting_create", { purpose, slots: parsed.length, min_duration: minDuration });
     router.push(`/create/done?m=${meeting.id}`);
   }
 

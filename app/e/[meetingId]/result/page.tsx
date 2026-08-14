@@ -11,6 +11,7 @@ import {
   reasonPoints,
   scoreCandidates,
 } from "@/lib/recommendation";
+import { track } from "@/lib/analytics";
 import { supabase } from "@/lib/supabase";
 import { PURPOSE_LABEL } from "@/lib/types";
 import { useCreatorToken } from "@/lib/useClientValue";
@@ -106,6 +107,7 @@ export default function ResultPage() {
         confirmed_candidate_id: top.candidate.id,
       })
       .eq("id", data.meeting.id);
+    track("meeting_confirm", { from: "result" });
     router.push(`/e/${data.meeting.id}/confirm`);
   }
 

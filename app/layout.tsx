@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import Link from "next/link";
+import Analytics from "@/components/Analytics";
 import SetupNotice from "@/components/SetupNotice";
 import "./globals.css";
 
@@ -51,6 +52,7 @@ export default function RootLayout({
             로그인 없이 링크만으로 쓰는 모임 조율 서비스
           </footer>
         </div>
+        <Analytics />
       </body>
     </html>
   );

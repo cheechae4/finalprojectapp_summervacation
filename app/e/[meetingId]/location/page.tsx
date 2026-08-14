@@ -15,6 +15,7 @@ import {
   type Point,
 } from "@/lib/geo";
 import { kakaoKey, searchPlace, type KakaoPlace } from "@/lib/kakao";
+import { track } from "@/lib/analytics";
 import { supabase } from "@/lib/supabase";
 import { PURPOSE_LABEL, type Purpose } from "@/lib/types";
 import { useCreatorToken, useParticipantToken } from "@/lib/useClientValue";
@@ -120,6 +121,7 @@ export default function LocationPage() {
         confirmed_place_lng: picked?.lng ?? savedPlacePoint?.lng ?? null,
       })
       .eq("id", data.meeting.id);
+    track("place_save", { has_coords: picked !== null });
     setSaving(false);
     setSaved(true);
     void reload();

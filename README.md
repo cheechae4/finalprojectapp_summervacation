@@ -68,6 +68,7 @@ npm run dev
 | `NEXT_PUBLIC_SUPABASE_URL` | 예 | Supabase Settings → API |
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | 예 | Supabase Settings → API |
 | `NEXT_PUBLIC_KAKAO_MAP_KEY` | 아니오 | 카카오 개발자센터 JavaScript 키 |
+| `NEXT_PUBLIC_GA_ID` | 아니오 | 구글 애널리틱스 측정 ID |
 | `ANTHROPIC_API_KEY` | 아니오 | console.anthropic.com |
 
 3. Deploy 합니다.
@@ -90,6 +91,22 @@ Supabase 값이 없는 상태로 배포하면 화면 위에 어떤 값이 빠졌
   - 스터디 / 회의: 시간 확보를 먼저 보고, 동점이면 후보가 긴 쪽
   - 식사: 선호 가중치를 3으로 올려서 "가고 싶은 사람" 수를 크게 봄
   - 친목: 점수보다 참석 가능 인원 수를 먼저 봄
+
+## 구글 애널리틱스 (선택)
+
+`NEXT_PUBLIC_GA_ID`에 측정 ID(`G-`로 시작)를 넣으면 붙습니다. 값이 없으면 스크립트 자체가 안 들어가서 아무것도 수집하지 않습니다.
+
+[analytics.google.com](https://analytics.google.com) → 관리 → 데이터 스트림 → 웹 스트림을 만들고 측정 ID를 복사하세요.
+
+앱 안에서 화면을 옮길 때는 페이지가 새로 열리지 않아서 조회수가 안 잡히는데, 주소가 바뀔 때마다 직접 알려주도록 해뒀습니다. 어디까지 쓰다 그만두는지 보려고 흐름의 마디마다 이벤트도 남깁니다.
+
+| 이벤트 | 언제 | 같이 남기는 값 |
+|---|---|---|
+| `meeting_create` | 모임을 만들고 링크가 나왔을 때 | 목적, 후보 개수, 최소 시간 |
+| `participant_join` | 이름을 적고 참여했을 때 | 위치를 남겼는지 |
+| `vote_save` | 투표를 저장했을 때 | 고른 후보 수 |
+| `place_save` | 장소를 저장했을 때 | 좌표까지 찍었는지 |
+| `meeting_confirm` | 시간을 확정했을 때 | 어느 화면에서 눌렀는지 |
 
 ## 소요시간 계산
 
