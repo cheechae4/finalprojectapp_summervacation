@@ -19,8 +19,8 @@ export default function SetupNotice() {
         아직 데이터베이스가 연결되지 않았어요
       </p>
       <p className="mt-1.5 text-[13.5px] leading-relaxed text-ink">
-        모임을 만들거나 투표하려면 Supabase 값이 필요해요. Vercel 프로젝트의
-        Settings → Environment Variables에 아래 값을 넣고 다시 배포해주세요.
+        표는 만들어졌어도, 앱이 어느 프로젝트로 접속할지는 따로 알려줘야 해요.
+        아래 칸이 비어 있어요.
       </p>
       <ul className="mt-2 space-y-1">
         {missing.map((key) => (
@@ -31,6 +31,17 @@ export default function SetupNotice() {
             {key}
           </li>
         ))}
+      </ul>
+      <p className="mt-2.5 text-[13px] leading-relaxed text-ink">
+        값은 Supabase 대시보드 <b>Settings → API</b>에 있어요. Project URL과
+        anon public key를 복사해서 넣어주세요.
+      </p>
+      <ul className="mt-1.5 space-y-0.5 text-[13px] leading-relaxed text-ink-soft">
+        <li>내 컴퓨터에서 볼 때는 프로젝트 폴더의 .env.local 파일</li>
+        <li>
+          배포한 주소에서 볼 때는 Vercel의 Settings → Environment Variables (넣은
+          뒤 Redeploy까지)
+        </li>
       </ul>
     </div>
   );
