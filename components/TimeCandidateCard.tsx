@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Icon from "./Icon";
 import VoteToggle from "./VoteToggle";
 import { durationMinutes, formatDate, formatDuration, formatTime } from "@/lib/format";
 import type { TimeCandidate, VoteStatus } from "@/lib/types";
@@ -32,7 +33,8 @@ export default function TimeCandidateCard({
             {formatTime(candidate.start_at)}–{formatTime(candidate.end_at)}
           </p>
         </div>
-        <span className="shrink-0 rounded-full bg-cream px-2.5 py-1 text-[12px] text-ink-soft">
+        <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-cream px-2.5 py-1 text-[12px] text-ink-soft">
+          <Icon name="clock" size={13} />
           {formatDuration(minutes)}
         </span>
       </div>

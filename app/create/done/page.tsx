@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Loading from "@/components/Loading";
 import { useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useState } from "react";
 import CopyLinkButton from "@/components/CopyLinkButton";
@@ -10,7 +11,7 @@ import { useOrigin } from "@/lib/useClientValue";
 export default function DonePage() {
   return (
     <Suspense
-      fallback={<p className="pt-8 text-[14px] text-ink-soft">불러오는 중</p>}
+      fallback={<Loading />}
     >
       <DoneContent />
     </Suspense>

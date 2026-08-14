@@ -8,15 +8,16 @@
   --color-sand: #ede4d3;
   --color-yellow: #e8b85c;
   --color-yellow-soft: #faf1dd;
+  --color-yellow-ink: #a97c1f;
   --color-coral: #e0785c;
   --color-coral-soft: #fbeae5;
   --color-ink: #2b2b28;
   --color-ink-soft: #6b6b63;
 
-  --radius-card: 16px;
+  --radius-card: 18px;
 
   --font-sans: "Pretendard Variable", Pretendard, -apple-system,
-    BlinkMacSystemFont, system-ui, "Segoe UI", Roboto, sans-serif;
+    BlinkMacSystemFont, system-ui, "Apple SD Gothic Neo", sans-serif;
 }
 
 :root {
@@ -53,24 +54,48 @@ select {
   color: #a8a89f;
 }
 
+:focus-visible {
+  outline: 2px solid var(--color-green);
+  outline-offset: 2px;
+}
+
 @utility card {
   background: #fff;
   border: 1px solid var(--color-sand);
   border-radius: var(--radius-card);
-  box-shadow: 0 2px 12px rgb(0 0 0 / 0.06);
+  box-shadow: 0 1px 2px rgb(0 0 0 / 0.04), 0 4px 16px rgb(0 0 0 / 0.05);
+}
+
+@utility card-tap {
+  transition:
+    transform 0.16s cubic-bezier(0.2, 0.9, 0.3, 1.2),
+    box-shadow 0.16s ease,
+    border-color 0.16s ease;
+}
+
+.card-tap:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 2px 4px rgb(0 0 0 / 0.05), 0 10px 24px rgb(0 0 0 / 0.08);
+}
+
+.card-tap:active {
+  transform: translateY(0);
 }
 
 @utility field {
   width: 100%;
   border: 1px solid var(--color-sand);
-  border-radius: 12px;
+  border-radius: 14px;
   padding: 0.7rem 0.9rem;
   outline: none;
-  transition: border-color 0.15s;
+  transition:
+    border-color 0.15s,
+    box-shadow 0.15s;
 }
 
 .field:focus {
   border-color: var(--color-green);
+  box-shadow: 0 0 0 3px var(--color-green-soft);
 }
 
 @utility btn-primary {
@@ -80,18 +105,29 @@ select {
   gap: 0.4rem;
   background: var(--color-green);
   color: #fff;
-  border-radius: 12px;
+  border-radius: 14px;
   padding: 0.8rem 1.4rem;
   font-weight: 600;
-  transition: background 0.15s;
+  box-shadow: 0 2px 0 var(--color-green-dark);
+  transition:
+    background 0.15s,
+    transform 0.12s,
+    box-shadow 0.12s;
 }
 
 .btn-primary:hover:not(:disabled) {
   background: var(--color-green-dark);
 }
 
+/* 눌렀을 때 아래 그림자만큼 살짝 내려앉는다 */
+.btn-primary:active:not(:disabled) {
+  transform: translateY(2px);
+  box-shadow: 0 0 0 var(--color-green-dark);
+}
+
 .btn-primary:disabled {
   background: #c4ccc7;
+  box-shadow: 0 2px 0 #aab3ad;
   cursor: not-allowed;
 }
 
@@ -103,12 +139,108 @@ select {
   background: #fff;
   color: var(--color-green-dark);
   border: 1px solid var(--color-sand);
-  border-radius: 12px;
+  border-radius: 14px;
   padding: 0.8rem 1.4rem;
   font-weight: 600;
-  transition: border-color 0.15s;
+  transition:
+    border-color 0.15s,
+    transform 0.12s;
 }
 
 .btn-ghost:hover {
   border-color: var(--color-green);
+}
+
+.btn-ghost:active {
+  transform: translateY(1px);
+}
+
+@utility chip-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  border: 1px solid var(--color-sand);
+  background: #fff;
+  border-radius: 999px;
+  padding: 0.4rem 0.85rem;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--color-green-dark);
+  transition:
+    border-color 0.15s,
+    transform 0.12s;
+}
+
+.chip-btn:hover:not(:disabled) {
+  border-color: var(--color-green);
+}
+
+.chip-btn:active:not(:disabled) {
+  transform: translateY(1px);
+}
+
+.chip-btn:disabled {
+  color: var(--color-ink-soft);
+  cursor: not-allowed;
+}
+
+/* 선택된 항목이 살짝 튀어오르는 느낌 */
+@keyframes pop {
+  0% {
+    transform: scale(1);
+  }
+  45% {
+    transform: scale(1.045);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+@utility pop-in {
+  animation: pop 0.24s cubic-bezier(0.2, 0.9, 0.3, 1.2);
+}
+
+/* 불러오는 중 표시 */
+@keyframes blink {
+  0%,
+  80%,
+  100% {
+    opacity: 0.25;
+  }
+  40% {
+    opacity: 1;
+  }
+}
+
+.dots span {
+  display: inline-block;
+  width: 5px;
+  height: 5px;
+  margin-left: 3px;
+  border-radius: 999px;
+  background: currentColor;
+  animation: blink 1.2s infinite;
+}
+
+.dots span:nth-child(2) {
+  animation-delay: 0.18s;
+}
+
+.dots span:nth-child(3) {
+  animation-delay: 0.36s;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+
+  .card-tap:hover {
+    transform: none;
+  }
 }

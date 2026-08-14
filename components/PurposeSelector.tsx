@@ -21,9 +21,9 @@ export default function PurposeSelector({
             type="button"
             onClick={() => onChange(purpose)}
             aria-pressed={selected}
-            className={`rounded-[14px] border p-3.5 text-left transition ${
+            className={`card-tap rounded-[16px] border p-3.5 text-left ${
               selected
-                ? "border-green bg-green-soft"
+                ? "border-green bg-green-soft pop-in"
                 : "border-sand bg-white hover:border-green"
             }`}
           >

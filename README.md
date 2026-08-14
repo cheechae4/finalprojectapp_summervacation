@@ -5,9 +5,10 @@
 ## 어떻게 동작하나요
 
 1. 모임을 만들면 `meeting_id`가 들어간 공유 링크가 나옵니다.
-2. 링크를 받은 사람은 이름과 출발지를 적고, 후보 시간마다 안 됨 / 가능 / 선호를 고릅니다.
+2. 링크를 받은 사람은 이름과 출발지를 적고, 후보 시간마다 안 됨 / 가능 / 선호를 고릅니다. 출발지는 "지금 있는 곳" 버튼으로 좌표까지 남길 수 있습니다.
 3. 결과 화면에서 목적별 가중치로 계산한 추천 시간과 그 이유를 보여줍니다.
-4. 장소와 준비물을 정리하고, 마지막에 한 페이지로 확정합니다.
+4. 장소 화면에서 참가자 위치를 지도에 찍고, 한가운데까지 각자 얼마나 걸리는지 계산합니다.
+5. 준비물을 정리하고, 마지막에 한 페이지로 확정합니다.
 
 로그인이 없어서 브라우저 로컬스토리지에 토큰을 둡니다. 모임을 만든 사람은 `creator_token`, 참가자는 모임별 `participant_token`으로 자기 것을 식별합니다.
 
@@ -33,11 +34,24 @@ npm run dev
 | `NEXT_PUBLIC_SUPABASE_URL` | 예 | Supabase 프로젝트 URL |
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | 예 | Supabase anon public key |
 | `ANTHROPIC_API_KEY` | 아니오 | 없으면 규칙 기반 문장으로 대체됩니다 |
+| `NEXT_PUBLIC_KAKAO_MAP_KEY` | 아니오 | 없으면 좌표만으로 그린 위치 관계도로 대체됩니다 |
+
+## 카카오맵 키 (선택)
+
+지도를 실제 지도로 띄우고 장소 이름으로 좌표를 찾으려면 필요합니다. 없어도 위치 관계도와 소요시간 계산은 그대로 동작합니다.
+
+1. [developers.kakao.com](https://developers.kakao.com)에 로그인하고 애플리케이션을 하나 만듭니다.
+2. **앱 키**에서 **JavaScript 키**를 복사해 `NEXT_PUBLIC_KAKAO_MAP_KEY`에 넣습니다.
+3. **플랫폼 → Web**에 사이트 도메인을 등록합니다. 등록 안 하면 지도가 안 뜹니다.
+   - 로컬: `http://localhost:3000`
+   - 배포: `https://<프로젝트>.vercel.app`
 
 ## Supabase 준비
 
 1. [supabase.com](https://supabase.com)에서 프로젝트를 만듭니다.
-2. 대시보드 왼쪽 **SQL Editor**를 열고 [`supabase/migrations/0001_init.sql`](supabase/migrations/0001_init.sql) 내용을 붙여넣어 실행합니다.
+2. 대시보드 왼쪽 **SQL Editor**를 열고 마이그레이션을 순서대로 실행합니다.
+   - [`supabase/migrations/0001_init.sql`](supabase/migrations/0001_init.sql) — 테이블과 접근 정책
+   - [`supabase/migrations/0002_location.sql`](supabase/migrations/0002_location.sql) — 출발지·장소 좌표
 3. **Settings > API**에서 Project URL과 anon public key를 복사해 환경변수에 넣습니다.
 
 ### 접근 정책에 대해
@@ -60,6 +74,16 @@ npm run dev
   - 스터디 / 회의: 시간 확보를 먼저 보고, 동점이면 후보가 긴 쪽
   - 식사: 선호 가중치를 3으로 올려서 "가고 싶은 사람" 수를 크게 봄
   - 친목: 점수보다 참석 가능 인원 수를 먼저 봄
+
+## 소요시간 계산
+
+`lib/geo.ts`에 있습니다. 길찾기 API를 쓰지 않고 직선거리로 어림잡습니다.
+
+- 두 지점 사이 직선거리를 구하고, 실제 길은 곧지 않으므로 1.3배를 곱합니다.
+- 1.2km 미만이면 도보(시속 4.5km), 그 이상이면 대중교통(도심 실효 시속 18km + 대기·환승 8분)으로 봅니다.
+- 중간 지점은 좌표를 남긴 참가자들의 평균 위치입니다. 장소를 정하고 나면 그 자리 기준으로 다시 계산합니다.
+
+실제 경로보다 짧게 나오는 어림값이라 화면에도 그렇게 밝혀 뒀습니다. 정확한 값이 필요하면 카카오모빌리티 길찾기나 ODsay 대중교통 API를 붙이면 됩니다.
 
 ## 폴더 구조
 

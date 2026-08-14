@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Loading from "@/components/Loading";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import RecommendationCard from "@/components/RecommendationCard";
@@ -109,7 +110,7 @@ export default function ResultPage() {
   }
 
   if (loading) {
-    return <p className="pt-8 text-[14px] text-ink-soft">불러오는 중</p>;
+    return <Loading />;
   }
   if (error || !data) {
     return (

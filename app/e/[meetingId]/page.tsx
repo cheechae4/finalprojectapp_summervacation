@@ -3,6 +3,8 @@
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
+import DeparturePicker, { type Departure } from "@/components/DeparturePicker";
+import Loading from "@/components/Loading";
 import TimeCandidateCard from "@/components/TimeCandidateCard";
 import { formatDuration } from "@/lib/format";
 import { supabase } from "@/lib/supabase";
@@ -23,7 +25,7 @@ export default function VotePage() {
 
   const [joined, setJoined] = useState<Participant | null>(null);
   const [nameEdit, setNameEdit] = useState<string | null>(null);
-  const [departureEdit, setDepartureEdit] = useState<string | null>(null);
+  const [departureEdit, setDepartureEdit] = useState<Departure | null>(null);
   const [draftEdits, setDraftEdits] = useState<Record<string, Draft> | null>(
     null,
   );
@@ -42,7 +44,11 @@ export default function VotePage() {
 
   const me = joined ?? known;
   const name = nameEdit ?? me?.name ?? "";
-  const departure = departureEdit ?? me?.departure_location ?? "";
+  const departure: Departure = departureEdit ?? {
+    text: me?.departure_location ?? "",
+    lat: me?.departure_lat ?? null,
+    lng: me?.departure_lng ?? null,
+  };
 
   const savedDrafts = useMemo<Record<string, Draft>>(() => {
     if (!data || !me) return {};
@@ -92,7 +98,9 @@ export default function VotePage() {
         meeting_id: data.meeting.id,
         participant_token: token,
         name: name.trim(),
-        departure_location: departure.trim() || null,
+        departure_location: departure.text.trim() || null,
+        departure_lat: departure.lat,
+        departure_lng: departure.lng,
       })
       .select("*")
       .single();
@@ -134,7 +142,9 @@ export default function VotePage() {
         .from("participants")
         .update({
           name: name.trim() || me.name,
-          departure_location: departure.trim() || null,
+          departure_location: departure.text.trim() || null,
+          departure_lat: departure.lat,
+          departure_lng: departure.lng,
         })
         .eq("id", me.id),
     ]);
@@ -149,9 +159,7 @@ export default function VotePage() {
     router.push(`/e/${data.meeting.id}/result`);
   }
 
-  if (loading) {
-    return <p className="pt-8 text-[14px] text-ink-soft">불러오는 중</p>;
-  }
+  if (loading) return <Loading />;
   if (error || !data) {
     return (
       <div className="pt-8">
@@ -186,13 +194,9 @@ export default function VotePage() {
             placeholder="이름"
             onChange={(e) => setNameEdit(e.target.value)}
           />
-          <input
-            className="field mt-2.5"
-            value={departure}
-            maxLength={40}
-            placeholder="어디서 출발하나요 (예: 성균관대학교)"
-            onChange={(e) => setDepartureEdit(e.target.value)}
-          />
+          <div className="mt-2.5">
+            <DeparturePicker value={departure} onChange={setDepartureEdit} />
+          </div>
           {formError && (
             <p className="mt-3 text-[13.5px] text-coral">{formError}</p>
           )}
@@ -213,7 +217,19 @@ export default function VotePage() {
         </section>
       ) : (
         <section className="mt-6">
-          <div className="flex items-baseline justify-between">
+          <details className="card p-4">
+            <summary className="cursor-pointer list-none text-[14px] font-medium">
+              출발지
+              <span className="ml-1.5 font-normal text-ink-soft">
+                {departure.text || "아직 안 적었어요"}
+              </span>
+            </summary>
+            <div className="mt-3">
+              <DeparturePicker value={departure} onChange={setDepartureEdit} />
+            </div>
+          </details>
+
+          <div className="mt-6 flex items-baseline justify-between">
             <h2 className="text-[16px] font-semibold">언제 되세요?</h2>
             <p className="text-[12.5px] text-ink-soft">
               선호 {summary.preferred} · 가능 {summary.available} · 불가{" "}

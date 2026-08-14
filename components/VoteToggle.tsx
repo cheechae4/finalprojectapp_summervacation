@@ -27,9 +27,9 @@ export default function VoteToggle({
             type="button"
             aria-pressed={selected}
             onClick={() => onChange(status)}
-            className={`rounded-[10px] border px-2 py-2 text-[13px] font-medium transition ${
+            className={`rounded-[12px] border px-2 py-2 text-[13px] font-medium transition active:translate-y-px ${
               selected
-                ? SELECTED_STYLE[status]
+                ? `${SELECTED_STYLE[status]} pop-in`
                 : "border-sand bg-white text-ink-soft hover:border-green"
             }`}
           >

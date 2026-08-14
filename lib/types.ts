@@ -10,6 +10,8 @@ export interface Meeting {
   status: "voting" | "confirmed";
   confirmed_candidate_id: string | null;
   confirmed_location: string | null;
+  confirmed_place_lat: number | null;
+  confirmed_place_lng: number | null;
   created_at: string;
 }
 
@@ -26,6 +28,8 @@ export interface Participant {
   participant_token: string;
   name: string;
   departure_location: string | null;
+  departure_lat: number | null;
+  departure_lng: number | null;
   created_at: string;
 }
 
