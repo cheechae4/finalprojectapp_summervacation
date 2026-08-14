@@ -72,7 +72,9 @@ npm run dev
 
 3. Deploy 합니다.
 
-**`NEXT_PUBLIC_`으로 시작하는 값은 빌드할 때 코드에 박힙니다.** 배포한 뒤에 값을 추가하거나 고쳤다면 Deployments에서 **Redeploy**를 눌러야 반영됩니다. `ANTHROPIC_API_KEY`는 서버에서만 읽으므로 재배포 없이도 다음 요청부터 적용됩니다.
+**환경변수를 추가하거나 고쳤다면 Deployments에서 Redeploy를 눌러야 반영됩니다.** 이미 배포된 결과물은 그대로 남아 있어서, 값만 저장해서는 바뀌지 않습니다. `NEXT_PUBLIC_`으로 시작하는 값은 빌드할 때 코드에 박히고, 서버에서만 쓰는 `ANTHROPIC_API_KEY`도 배포 시점에 주입되므로 둘 다 재배포가 필요합니다.
+
+`NEXT_PUBLIC_SUPABASE_URL`에는 Supabase 대시보드의 Project URL을 그대로 넣습니다. 뒤에 `/rest/v1/`를 붙이면 안 됩니다.
 
 Supabase 값이 없는 상태로 배포하면 화면 위에 어떤 값이 빠졌는지 알려주는 안내가 뜹니다.
 
